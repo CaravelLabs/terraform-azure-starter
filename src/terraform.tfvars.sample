@@ -1,0 +1,11 @@
+# To use: rename this file to terraform.tfvars and enter the values
+
+subscription_id = ""
+tenant_id = ""
+main_resource_group_name = ""
+client_id = ""
+client_secret = ""
+environment = "" # Used for naming, examples: dev, ci, staging, prod
+naming_prefix = "" # Used for naming, example: my-project
+location = "" # Azure location, for example EastUS, CentralUS, WestUS
+database_name = ""

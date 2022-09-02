@@ -1,0 +1,11 @@
+# To use: rename this file to backend.tfvars, enter the values and run 'terraform init -backend-config="./backend.tfvars"
+
+subscription_id = ""
+tenant_id = ""
+client_id = ""
+client_secret = ""
+resource_group_name = "
+storage_account_name = ""
+access_key = ""
+container_name = ""
+key = ""
