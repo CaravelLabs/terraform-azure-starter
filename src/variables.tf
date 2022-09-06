@@ -50,16 +50,10 @@ variable web_always_on {
   default = "false"
 }
 
-variable web_size {
-  type        = string
-  description = "VM size for the Web App plan"
-  default = "F1"
-}
-
 variable web_tier {
   type        = string
   description = "VM tier for the Web App plan"
-  default = "free"
+  default = "F1"
 }
 
 variable api_always_on {
@@ -68,18 +62,11 @@ variable api_always_on {
   default = "false"
 }
 
-variable api_size {
+variable api_tier {
   type        = string
   description = "VM size for the API App plan"
   default = "F1"
 }
-
-variable api_tier {
-  type        = string
-  description = "VM tier for the API App plan"
-  default = "free"
-}
-
 
 variable storage_tier {
   type        = string
