@@ -1,8 +1,8 @@
-terraform {  
+terraform {
   required_providers {
     azurerm = {
       source  = "hashicorp/azurerm"
-      version = "2.95.0"
+      version = "3.21.1"
     }
   }
 }
@@ -72,7 +72,7 @@ resource "azurerm_app_service" "starter" {
     APPINSIGHTS_INSTRUMENTATIONKEY  = azurerm_application_insights.starter.instrumentation_key
     APPINSIGHTS_ROLENAME            = "web-${var.naming_prefix}-${var.environment}"
     WEBSITE_ENABLE_SYNC_UPDATE_SITE = "true"
-  }  
+  }
 
   logs {
     failed_request_tracing_enabled  = true
@@ -100,16 +100,16 @@ resource "azurerm_function_app" "starter" {
   https_only                 = true
 
   app_settings = {
-    FUNCTIONS_WORKER_RUNTIME               = "node"
-    WEBSITE_ENABLE_SYNC_UPDATE_SITE        = "true"
-    WEBSITE_NODE_DEFAULT_VERSION           = "~14"
-    WEBSITE_RUN_FROM_PACKAGE               = "1"
-    APPINSIGHTS_INSTRUMENTATIONKEY         = azurerm_application_insights.starter.instrumentation_key
-    APPINSIGHTS_ROLENAME                   = "func-${var.naming_prefix}-${var.environment}"
-    COSMOSDB_ENDPOINT                      = azurerm_cosmosdb_account.starter.endpoint
-    COSMOSDB_KEY                           = azurerm_cosmosdb_account.starter.primary_key
-    COSMOSDB_STARTER_CONTAINER             = azurerm_cosmosdb_sql_container.starter.name
-    DATABASE_NAME                          = var.database_name    
+    FUNCTIONS_WORKER_RUNTIME        = "node"
+    WEBSITE_ENABLE_SYNC_UPDATE_SITE = "true"
+    WEBSITE_NODE_DEFAULT_VERSION    = "~14"
+    WEBSITE_RUN_FROM_PACKAGE        = "1"
+    APPINSIGHTS_INSTRUMENTATIONKEY  = azurerm_application_insights.starter.instrumentation_key
+    APPINSIGHTS_ROLENAME            = "func-${var.naming_prefix}-${var.environment}"
+    COSMOSDB_ENDPOINT               = azurerm_cosmosdb_account.starter.endpoint
+    COSMOSDB_KEY                    = azurerm_cosmosdb_account.starter.primary_key
+    COSMOSDB_STARTER_CONTAINER      = azurerm_cosmosdb_sql_container.starter.name
+    DATABASE_NAME                   = var.database_name
   }
 
   site_config {
@@ -134,6 +134,10 @@ resource "azurerm_cosmosdb_account" "starter" {
   access_key_metadata_writes_enabled = false
   local_authentication_disabled      = false
 
+  capabilities {
+    name = "EnableServerless"
+  }
+
   consistency_policy {
     consistency_level       = "Session"
     max_interval_in_seconds = 5
@@ -150,7 +154,6 @@ resource "azurerm_cosmosdb_sql_database" "starter" {
   name                = var.database_name
   resource_group_name = data.azurerm_resource_group.starter.name
   account_name        = azurerm_cosmosdb_account.starter.name
-  throughput          = 400
 }
 
 resource "azurerm_cosmosdb_sql_container" "starter" {
@@ -162,12 +165,12 @@ resource "azurerm_cosmosdb_sql_container" "starter" {
 }
 
 resource "azurerm_storage_account" "starter" {
-  name                      = "strg${var.naming_prefix}${var.environment}"
-  resource_group_name       = data.azurerm_resource_group.starter.name
-  location                  = var.location
-  account_tier              = var.storage_tier
-  account_replication_type  = var.storage_replication
-  allow_blob_public_access  = false
-  enable_https_traffic_only = true
-  min_tls_version           = "TLS1_2"
+  name                            = "strg${var.naming_prefix}${var.environment}"
+  resource_group_name             = data.azurerm_resource_group.starter.name
+  location                        = var.location
+  account_tier                    = var.storage_tier
+  account_replication_type        = var.storage_replication
+  allow_nested_items_to_be_public = false
+  enable_https_traffic_only       = true
+  min_tls_version                 = "TLS1_2"
 }
