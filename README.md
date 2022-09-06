@@ -10,6 +10,7 @@ This Terraform project creates the following Azure resources:
 1. Functions App
 1. Storage Account
 1. Azure Cosmos DB
+1. Azure Front Door for Web App
 
 **Note**: This sample assumes use of local Terraform state, for production scenarios we recommend [storing the Terraform state in Azure Storage](https://docs.microsoft.com/en-us/azure/developer/terraform/store-state-in-azure-storage?tabs=azure-cli).
 

@@ -118,6 +118,57 @@ resource "azurerm_linux_function_app" "starter" {
   }
 }
 
+locals {
+  default_frontend_endpoint_name      = "${var.naming_prefix}-${var.environment}-fd-azurefd-net"
+  default_frontend_endpoint           = "${var.naming_prefix}-${var.environment}-fd.azurefd.net"
+}
+
+resource "azurerm_frontdoor" "starter" {
+  name                = "${var.naming_prefix}-${var.environment}-fd"
+  friendly_name       = "${var.naming_prefix}-${var.environment}-fd"
+  resource_group_name = data.azurerm_resource_group.starter.name
+
+  frontend_endpoint {
+    name      = local.default_frontend_endpoint_name
+    host_name = local.default_frontend_endpoint
+  }
+
+  backend_pool {
+    name = "${var.naming_prefix}-${var.environment}-backend-pool"
+    backend {
+      host_header = azurerm_linux_web_app.starter.default_hostname
+      address     = azurerm_linux_web_app.starter.default_hostname
+      http_port   = 80
+      https_port  = 443
+    }
+    load_balancing_name = "load-balancing-${var.naming_prefix}-${var.environment}"
+    health_probe_name   = "health-probe-${var.naming_prefix}-${var.environment}"
+  }
+
+  backend_pool_load_balancing {
+    name = "load-balancing-${var.naming_prefix}-${var.environment}"
+  }
+
+  backend_pool_health_probe {
+    name                = "health-probe-${var.naming_prefix}-${var.environment}"
+    enabled             = false
+    interval_in_seconds = 30
+    probe_method        = "HEAD"
+    protocol            = "Https"
+  }
+
+  routing_rule {
+    name               = "rule-${var.naming_prefix}-${var.environment}-all-paths"
+    accepted_protocols = ["Http", "Https"]
+    patterns_to_match  = ["/*"]
+    frontend_endpoints = [local.default_frontend_endpoint_name]
+    forwarding_configuration {
+      forwarding_protocol = "HttpsOnly"
+      backend_pool_name   = "${var.naming_prefix}-${var.environment}-backend-pool"
+    }
+  }
+}
+
 resource "azurerm_cosmosdb_account" "starter" {
   name                               = "cdb-${var.naming_prefix}-${var.environment}"
   location                           = var.location
