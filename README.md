@@ -40,15 +40,24 @@ Follow these [instructions to create a new Service Principal](https://docs.micro
 
 Once created, please note the client Id and the client secret as you will need it as part of setting up the Terraform variables.
 ## How to run
-TODO: Instructions to configure variables
+Configure your variables
 
-Navigate to the src folder and execute the following commands:
+1. Copy file "terraform.tfvars.sample" and rename to "terraform.tfvars".
+1. Replace the values in this file with the ones obtained during the prerequisite steps.
+
+After configuring your variables, navigate to the src folder from a terminal console and execute the following commands:
+
+Initialize Terraform:
 ```
 terraform init
 ```
+
+Display execution plan:
 ```
 terraform plan
 ```
+
+Deploy infrastructure:
 ```
 terraform apply
 ```
