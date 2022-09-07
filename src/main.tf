@@ -119,8 +119,8 @@ resource "azurerm_linux_function_app" "starter" {
 }
 
 locals {
-  default_frontend_endpoint_name      = "${var.naming_prefix}-${var.environment}-fd-azurefd-net"
-  default_frontend_endpoint           = "${var.naming_prefix}-${var.environment}-fd.azurefd.net"
+  default_frontend_endpoint_name = "${var.naming_prefix}-${var.environment}-fd-azurefd-net"
+  default_frontend_endpoint      = "${var.naming_prefix}-${var.environment}-fd.azurefd.net"
 }
 
 resource "azurerm_frontdoor" "starter" {
@@ -128,6 +128,7 @@ resource "azurerm_frontdoor" "starter" {
   friendly_name       = "${var.naming_prefix}-${var.environment}-fd"
   resource_group_name = data.azurerm_resource_group.starter.name
 
+  # start: web
   frontend_endpoint {
     name      = local.default_frontend_endpoint_name
     host_name = local.default_frontend_endpoint
@@ -156,10 +157,38 @@ resource "azurerm_frontdoor" "starter" {
     probe_method        = "HEAD"
     protocol            = "Https"
   }
+  # end: web
 
+  # start: func
+  backend_pool {
+    name = "${var.naming_prefix}-${var.environment}-func-backend-pool"
+    backend {
+      host_header = azurerm_linux_function_app.starter.default_hostname
+      address     = azurerm_linux_function_app.starter.default_hostname
+      http_port   = 80
+      https_port  = 443
+    }
+    load_balancing_name = "load-balancing-${var.naming_prefix}-${var.environment}-func"
+    health_probe_name   = "health-probe-${var.naming_prefix}-${var.environment}-func"
+  }
+
+  backend_pool_load_balancing {
+    name = "load-balancing-${var.naming_prefix}-${var.environment}-func"
+  }
+
+  backend_pool_health_probe {
+    name                = "health-probe-${var.naming_prefix}-${var.environment}-func"
+    enabled             = false
+    interval_in_seconds = 30
+    probe_method        = "HEAD"
+    protocol            = "Https"
+  }
+  # end: func
+
+  # start: routes
   routing_rule {
     name               = "rule-${var.naming_prefix}-${var.environment}-all-paths"
-    accepted_protocols = ["Http", "Https"]
+    accepted_protocols = ["Https"]
     patterns_to_match  = ["/*"]
     frontend_endpoints = [local.default_frontend_endpoint_name]
     forwarding_configuration {
@@ -167,6 +196,28 @@ resource "azurerm_frontdoor" "starter" {
       backend_pool_name   = "${var.naming_prefix}-${var.environment}-backend-pool"
     }
   }
+
+  routing_rule {
+    name               = "rule-${var.naming_prefix}-${var.environment}-http-to-https"
+    accepted_protocols = ["Http"]
+    patterns_to_match  = ["/*"]
+    frontend_endpoints = [local.default_frontend_endpoint_name]
+    redirect_configuration {
+      redirect_protocol = "HttpsOnly"
+      redirect_type     = "Found"
+    }
+  }
+  routing_rule {
+    name               = "rule-${var.naming_prefix}-${var.environment}-func-paths"
+    accepted_protocols = ["Https"]
+    patterns_to_match  = ["/api/*"]
+    frontend_endpoints = [local.default_frontend_endpoint_name]
+    forwarding_configuration {
+      forwarding_protocol = "HttpsOnly"
+      backend_pool_name   = "${var.naming_prefix}-${var.environment}-func-backend-pool"
+    }
+  }
+  # end: routes
 }
 
 resource "azurerm_cosmosdb_account" "starter" {
