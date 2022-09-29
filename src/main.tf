@@ -21,7 +21,7 @@ data "azurerm_resource_group" "starter" {
 }
 
 resource "azurerm_log_analytics_workspace" "starter" {
-  name                = "law-${var.naming_prefix}-${var.environment}"
+  name                = "${var.naming_prefix}-${var.environment}"
   location            = var.location
   resource_group_name = data.azurerm_resource_group.starter.name
   sku                 = "PerGB2018"
